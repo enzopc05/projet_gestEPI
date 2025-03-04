@@ -7,10 +7,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import WarningIcon from '@mui/icons-material/Warning';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { getAllEPIChecks, getEPIsDueForCheck, deleteEPICheck } from '../services/api';
-import { EPICheck, EPI } from '../types';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { getAllEPIChecks, getEPIsDueForCheck, deleteEPICheck } from '../services/api';
 import { exportCheckListToPDF, exportCheckListToExcel } from '../services/exportService';
+import { EPICheck, EPI } from '../types';
 
 const CheckList = () => {
   const [checks, setChecks] = useState<EPICheck[]>([]);
@@ -80,7 +80,24 @@ const CheckList = () => {
         
         {tabValue === 0 && (
           <>
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+              <Box>
+                <Button 
+                  variant="outlined" 
+                  startIcon={<FileDownloadIcon />} 
+                  onClick={() => exportCheckListToPDF(checks)}
+                  sx={{ mr: 1 }}
+                >
+                  Exporter PDF
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  startIcon={<FileDownloadIcon />} 
+                  onClick={() => exportCheckListToExcel(checks)}
+                >
+                  Exporter Excel
+                </Button>
+              </Box>
               <Button 
                 variant="contained" 
                 color="primary" 
@@ -197,35 +214,6 @@ const CheckList = () => {
                         color="primary" 
                         aria-label="voir"
                       >
-                        {tabValue === 0 && (
-  <>
-    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-      <Box>
-        <Button 
-          variant="outlined" 
-          startIcon={<FileDownloadIcon />} 
-          onClick={() => exportCheckListToPDF(checks)}
-          sx={{ mr: 1 }}
-        >
-          Exporter PDF
-        </Button>
-        <Button 
-          variant="outlined" 
-          startIcon={<FileDownloadIcon />} 
-          onClick={() => exportCheckListToExcel(checks)}
-        >
-          Exporter Excel
-        </Button>
-      </Box>
-      <Button 
-        variant="contained" 
-        color="primary" 
-        component={RouterLink} 
-        to="/checks/new"
-      >
-        Nouvelle vérification
-      </Button>
-    </Box>
                         <VisibilityIcon />
                       </IconButton>
                     </TableCell>

@@ -14,15 +14,19 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  Button
 } from '@mui/material';
 import { getDashboardStats, getEPIsDueForCheck } from '../services/api';
 import { Link as RouterLink } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { EPI } from '../types';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 // Définition des interfaces pour les données du tableau de bord
 interface ChartDataPoint {
@@ -82,6 +86,94 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  const exportStatsToPDF = () => {
+    if (!stats) return;
+    
+    const doc = new jsPDF();
+    
+    // Titre
+    doc.setFontSize(18);
+    doc.text('Rapport statistique GestEPI', 14, 22);
+    
+    // Date
+    doc.setFontSize(11);
+    doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 14, 30);
+    
+    // Statistiques générales
+    doc.setFontSize(14);
+    doc.text('Statistiques générales', 14, 45);
+    
+    const operationalPercentage = stats.epiCount > 0 
+      ? Math.round((stats.epiByStatus.find((s) => s.statusName === 'Opérationnel')?.count || 0) / stats.epiCount * 100) 
+      : 0;
+    
+    const generalStats = [
+      ['Nombre total d\'EPIs', stats.epiCount.toString()],
+      ['EPIs opérationnels', `${operationalPercentage}%`],
+      ['Vérifications urgentes', stats.pendingChecks.urgent.toString()],
+      ['Vérifications à venir', (stats.pendingChecks.soon + stats.pendingChecks.upcoming).toString()]
+    ];
+    
+    (doc as any).autoTable({
+      body: generalStats,
+      startY: 50,
+      theme: 'plain',
+      styles: { fontSize: 12 }
+    });
+    
+    // Répartition par type
+    doc.setFontSize(14);
+    doc.text('Répartition par type', 14, (doc as any).lastAutoTable.finalY + 15);
+    
+    const typeStats = stats.epiByType.map(item => [item.typeName, item.count.toString()]);
+    
+    (doc as any).autoTable({
+      head: [['Type', 'Nombre']],
+      body: typeStats,
+      startY: (doc as any).lastAutoTable.finalY + 20,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] }
+    });
+    
+    // Répartition par statut
+    doc.setFontSize(14);
+    doc.text('Répartition par statut', 14, (doc as any).lastAutoTable.finalY + 15);
+    
+    const statusStats = stats.epiByStatus.map(item => [item.statusName, item.count.toString()]);
+    
+    (doc as any).autoTable({
+      head: [['Statut', 'Nombre']],
+      body: statusStats,
+      startY: (doc as any).lastAutoTable.finalY + 20,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] }
+    });
+    
+    // Historique des vérifications
+    if (stats.checksHistory.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text('Historique des vérifications', 14, 20);
+      
+      const historyStats = stats.checksHistory.map(item => {
+        const [year, month] = item.month.split('-');
+        const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+        return [`${monthNames[parseInt(month) - 1]} ${year}`, item.count.toString()];
+      });
+      
+      (doc as any).autoTable({
+        head: [['Mois', 'Nombre de vérifications']],
+        body: historyStats,
+        startY: 25,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185] }
+      });
+    }
+    
+    // Sauvegarde
+    doc.save('rapport_statistique.pdf');
+  };
+
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
       <CircularProgress />
@@ -124,9 +216,18 @@ const Dashboard = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Tableau de bord
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1">
+            Tableau de bord
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={exportStatsToPDF}
+          >
+            Exporter rapport
+          </Button>
+        </Box>
         
         {/* Résumé des statistiques */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -350,103 +451,6 @@ const Dashboard = () => {
       </Box>
     </Container>
   );
-  // Importations à ajouter
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-// Ajoutons une fonction pour exporter les statistiques en PDF
-const exportStatsToPDF = () => {
-  const doc = new jsPDF();
-  
-  // Titre
-  doc.setFontSize(18);
-  doc.text('Rapport statistique GestEPI', 14, 22);
-  
-  // Date
-  doc.setFontSize(11);
-  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 14, 30);
-  
-  // Statistiques générales
-  doc.setFontSize(14);
-  doc.text('Statistiques générales', 14, 45);
-  
-  const generalStats = [
-    ['Nombre total d\'EPIs', stats.epiCount.toString()],
-    ['EPIs opérationnels', `${operationalPercentage}%`],
-    ['Vérifications urgentes', urgentChecksCount.toString()],
-    ['Vérifications à venir', (soonChecksCount + upcomingChecksCount).toString()]
-  ];
-  
-  (doc as any).autoTable({
-    body: generalStats,
-    startY: 50,
-    theme: 'plain',
-    styles: { fontSize: 12 }
-  });
-  
-  // Répartition par type
-  doc.setFontSize(14);
-  doc.text('Répartition par type', 14, (doc as any).lastAutoTable.finalY + 15);
-  
-  const typeStats = typeData.map(item => [item.name, item.value.toString()]);
-  
-  (doc as any).autoTable({
-    head: [['Type', 'Nombre']],
-    body: typeStats,
-    startY: (doc as any).lastAutoTable.finalY + 20,
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [41, 128, 185] }
-  });
-  
-  // Répartition par statut
-  doc.setFontSize(14);
-  doc.text('Répartition par statut', 14, (doc as any).lastAutoTable.finalY + 15);
-  
-  const statusStats = statusData.map(item => [item.name, item.value.toString()]);
-  
-  (doc as any).autoTable({
-    head: [['Statut', 'Nombre']],
-    body: statusStats,
-    startY: (doc as any).lastAutoTable.finalY + 20,
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [41, 128, 185] }
-  });
-  
-  // Historique des vérifications
-  if (checksHistoryData.length > 0) {
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text('Historique des vérifications', 14, 20);
-    
-    const historyStats = checksHistoryData.map(item => [item.month, item.count.toString()]);
-    
-    (doc as any).autoTable({
-      head: [['Mois', 'Nombre de vérifications']],
-      body: historyStats,
-      startY: 25,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] }
-    });
-  }
-  
-  // Sauvegarde
-  doc.save('rapport_statistique.pdf');
-};
-
-// Ajoutons le bouton d'exportation à côté du titre
-<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-  <Typography variant="h4" component="h1">
-    Tableau de bord
-  </Typography>
-  <Button
-    variant="outlined"
-    startIcon={<FileDownloadIcon />}
-    onClick={exportStatsToPDF}
-  >
-    Exporter rapport
-  </Button>
-</Box>
 };
 
 export default Dashboard;
