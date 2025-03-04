@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { getAllEPIChecks, getEPIsDueForCheck, deleteEPICheck } from '../services/api';
-import { exportCheckListToPDF, exportCheckListToExcel } from '../services/exportService';
+import { exportUserListToPDF, exportUserListToExcel } from '../services/exportService';
 import { EPICheck, EPI } from '../types';
 
 const CheckList = () => {
@@ -85,7 +85,7 @@ const CheckList = () => {
                 <Button 
                   variant="outlined" 
                   startIcon={<FileDownloadIcon />} 
-                  onClick={() => exportCheckListToPDF(checks)}
+                  onClick={() => exportUserListToPDF(checks)}
                   sx={{ mr: 1 }}
                 >
                   Exporter PDF
@@ -93,7 +93,7 @@ const CheckList = () => {
                 <Button 
                   variant="outlined" 
                   startIcon={<FileDownloadIcon />} 
-                  onClick={() => exportCheckListToExcel(checks)}
+                  onClick={() => exportUserListToExcel(checks)}
                 >
                   Exporter Excel
                 </Button>
