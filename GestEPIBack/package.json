@@ -4,13 +4,13 @@
   "description": "Starter for an Express Typescript API with MariaDB",
   "bin": "./bin/cli.js",
   "main": "src/index.ts",
-"scripts": {
-  "start": "react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject",
-  "prepare": "husky"
-},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "prepare": "husky"
+  },
   "keywords": [],
   "author": "Roméo Giorgio",
   "repository": {
@@ -22,7 +22,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
-    "mariadb": "^3.2.2",
+    "mysql2": "^3.12.0",
     "prettier": "^3.1.0"
   },
   "devDependencies": {
