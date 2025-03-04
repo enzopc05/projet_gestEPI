@@ -1,32 +1,33 @@
 export interface EPI {
+    daysUntilNextCheck: number;
     id?: number;
     brand: string;
     model: string;
     serialNumber: string;
     size?: string;
     color?: string;
-    purchaseDate: Date | string;
-    manufactureDate: Date | string;
-    serviceStartDate: Date | string;
+    purchaseDate: Date;
+    manufactureDate: Date;
+    serviceStartDate: Date;
     periodicity: number;
     epiTypeId: number;
     statusId: number;
-    endOfLifeDate?: Date | string;
+    endOfLifeDate?: Date;
     typeName?: string;
     statusName?: string;
   }
-  
+    
   export interface EPIType {
     id: number;
     typeName: string;
     isTextile: boolean;
   }
-  
+    
   export interface EPIStatus {
     id: number;
     statusName: string;
   }
-  
+    
   export interface User {
     id?: number;
     firstName: string;
@@ -36,10 +37,10 @@ export interface EPI {
     userTypeId: number;
     typeName?: string;
   }
-  
+    
   export interface EPICheck {
     id?: number;
-    checkDate: Date | string;
+    checkDate: Date;
     userId: number;
     epiId: number;
     statusId: number;

@@ -1,27 +1,40 @@
-import logo from "./logo.svg";
-import "./App.css";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard'; // Ajouté
+import EPIList from './pages/EPIList';
+import EPIDetail from './pages/EPIDetail';
+import EPIForm from './pages/EPIForm';
+import CheckList from './pages/CheckList';
+import CheckDetail from './pages/CheckDetail';
+import CheckForm from './pages/CheckForm';
+import './App.css';
 
 function App() {
-    console.log("");
-
-    return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.tsx</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
-        </div>
-    );
+  return (
+    <Router>
+      <div className="App">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} /> {/* Ajouté */}
+          
+          {/* Routes EPIs */}
+          <Route path="/epis" element={<EPIList />} />
+          <Route path="/epis/:id" element={<EPIDetail />} />
+          <Route path="/epis/new" element={<EPIForm />} />
+          <Route path="/epis/edit/:id" element={<EPIForm />} />
+          
+          {/* Routes Vérifications */}
+          <Route path="/checks" element={<CheckList />} />
+          <Route path="/checks/:id" element={<CheckDetail />} />
+          <Route path="/checks/new" element={<CheckForm />} />
+          <Route path="/checks/edit/:id" element={<CheckForm />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
 export default App;

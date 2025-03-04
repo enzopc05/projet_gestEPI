@@ -64,3 +64,43 @@ export const updateUser = async (id: number, user: User) => {
 export const deleteUser = async (id: number) => {
   await axios.delete(`${API_URL}/users/${id}`);
 };
+
+export const getAllEPIChecks = async () => {
+    const response = await axios.get<EPICheck[]>(`${API_URL}/epi-checks`);
+    return response.data;
+  };
+  
+  export const getEPICheckById = async (id: number) => {
+    const response = await axios.get<EPICheck>(`${API_URL}/epi-checks/${id}`);
+    return response.data;
+  };
+  
+  export const getEPIChecksByEPI = async (epiId: number) => {
+    const response = await axios.get<EPICheck[]>(`${API_URL}/epi-checks/epi/${epiId}`);
+    return response.data;
+  };
+  
+  export const getEPIsDueForCheck = async () => {
+    const response = await axios.get<EPI[]>(`${API_URL}/epi-checks/due`);
+    return response.data;
+  };
+  
+  export const createEPICheck = async (check: EPICheck) => {
+    const response = await axios.post<EPICheck>(`${API_URL}/epi-checks`, check);
+    return response.data;
+  };
+  
+  export const updateEPICheck = async (id: number, check: EPICheck) => {
+    const response = await axios.put<EPICheck>(`${API_URL}/epi-checks/${id}`, check);
+    return response.data;
+  };
+  
+  export const deleteEPICheck = async (id: number) => {
+    await axios.delete(`${API_URL}/epi-checks/${id}`);
+  };
+
+  // Dashboard
+export const getDashboardStats = async () => {
+    const response = await axios.get(`${API_URL}/dashboard`);
+    return response.data;
+  };

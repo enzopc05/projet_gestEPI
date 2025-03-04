@@ -6,6 +6,8 @@ import epiRoutes from "./routes/epi";
 import epiTypeRoutes from "./routes/epiType";
 import epiStatusRoutes from "./routes/epiStatus";
 import userRoutes from "./routes/user";
+import epiCheckRoutes from "./routes/epiCheck";
+import dashboardRoutes from "./routes/dashboard"; // Ajouté
 
 require("dotenv").config();
 
@@ -27,6 +29,8 @@ app.use('/api/epis', epiRoutes);
 app.use('/api/epi-types', epiTypeRoutes);
 app.use('/api/epi-status', epiStatusRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/epi-checks', epiCheckRoutes);
+app.use('/api/dashboard', dashboardRoutes); // Ajouté
 
 // Erreur 404 pour les routes non trouvées
 app.use(middlewares.notFound);

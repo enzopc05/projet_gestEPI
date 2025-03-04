@@ -6,6 +6,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
 import { EPI } from '../types';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { exportEPIListToPDF, exportEPIListToExcel } from '../services/exportService';
 
 const EPIList = () => {
   const [epis, setEpis] = useState<EPI[]>([]);
@@ -113,6 +115,34 @@ const EPIList = () => {
         </TableContainer>
       </Box>
     </Container>
+// Dans le composant, ajouter les boutons d'exportation juste après le bouton "Ajouter un EPI" :
+<Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+  <Box>
+    <Button 
+      variant="outlined" 
+      startIcon={<FileDownloadIcon />} 
+      onClick={() => exportEPIListToPDF(epis)}
+      sx={{ mr: 1 }}
+    >
+      Exporter PDF
+    </Button>
+    <Button 
+      variant="outlined" 
+      startIcon={<FileDownloadIcon />} 
+      onClick={() => exportEPIListToExcel(epis)}
+    >
+      Exporter Excel
+    </Button>
+  </Box>
+  <Button 
+    variant="contained" 
+    color="primary" 
+    component={RouterLink} 
+    to="/epis/new"
+  >
+    Ajouter un EPI
+  </Button>
+</Box>
   );
 };
 
