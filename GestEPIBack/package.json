@@ -4,14 +4,13 @@
   "description": "Starter for an Express Typescript API with MariaDB",
   "bin": "./bin/cli.js",
   "main": "src/index.ts",
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "dev": "concurrently -k -n \"Typescript,Node\" -p \"[{name}]\" -c \"blue,green\" \"tsc --watch\" \"nodemon dist/index.js\"",
-    "build": "tsc",
-    "lint": "eslint --fix src test",
-    "test": "jest",
-    "typecheck": "tsc --noEmit"
-  },
+"scripts": {
+  "start": "react-scripts start",
+  "build": "react-scripts build",
+  "test": "react-scripts test",
+  "eject": "react-scripts eject",
+  "prepare": "husky"
+},
   "keywords": [],
   "author": "Roméo Giorgio",
   "repository": {

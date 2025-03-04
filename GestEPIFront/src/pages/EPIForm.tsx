@@ -18,7 +18,7 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { fr } from 'date-fns/locale';
+import fr from 'date-fns/locale/fr';
 import { createEPI, getEPIById, updateEPI, getAllEPITypes, getAllEPIStatus } from '../services/api';
 import { EPI, EPIType, EPIStatus } from '../types';
 

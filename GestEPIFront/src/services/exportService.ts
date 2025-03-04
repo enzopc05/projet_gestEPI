@@ -3,8 +3,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import format from 'date-fns/format';
+import fr from 'date-fns/locale/fr';
 import { EPI, EPICheck, User } from '../types';
 
 // Fonction pour exporter des statistiques du dashboard en PDF

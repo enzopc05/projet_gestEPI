@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Paper, Grid, Button, Chip } from '@mui/material';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import format from 'date-fns/format';
+import fr from 'date-fns/locale/fr';
 import { getEPICheckById, deleteEPICheck } from '../services/api';
 import { EPICheck } from '../types';
 
