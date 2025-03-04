@@ -38,8 +38,11 @@
     "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^7.2.0",
     "react-scripts": "5.0.1",
     "typescript": "*",
     "web-vitals": "^2.1.0"
@@ -55,9 +58,7 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{ts,tsx}": [
-    ],
-    "src/**/*.{json,css,scss}": [
-    ]
+    "src/**/*.{ts,tsx}": [],
+    "src/**/*.{json,css,scss}": []
   }
 }
