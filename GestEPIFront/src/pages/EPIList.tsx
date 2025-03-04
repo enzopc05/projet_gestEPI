@@ -1,3 +1,4 @@
+// GestEPIFront/src/pages/EPIList.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -21,7 +22,17 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { getAllEPIs, deleteEPI } from '../services/api';
 import { EPI } from '../types';
-import { exportEPIListToPDF, exportEPIListToExcel } from '../services/exportService';
+
+// Fonctions d'exportation temporaires (à remplacer par les véritables fonctions)
+const exportEPIListToPDF = (epis: EPI[]) => {
+  alert('Exportation PDF non implémentée');
+  console.log('EPIs à exporter:', epis);
+};
+
+const exportEPIListToExcel = (epis: EPI[]) => {
+  alert('Exportation Excel non implémentée');
+  console.log('EPIs à exporter:', epis);
+};
 
 const EPIList: React.FC = () => {
   const [epis, setEpis] = useState<EPI[]>([]);
@@ -56,14 +67,6 @@ const EPIList: React.FC = () => {
     }
   };
 
-  const handleExportPDF = () => {
-    exportEPIListToPDF(epis);
-  };
-
-  const handleExportExcel = () => {
-    exportEPIListToExcel(epis);
-  };
-
   if (loading) return <Typography>Chargement en cours...</Typography>;
   
   return (
@@ -84,7 +87,7 @@ const EPIList: React.FC = () => {
             <Button 
               variant="outlined" 
               startIcon={<FileDownloadIcon />} 
-              onClick={handleExportPDF}
+              onClick={() => exportEPIListToPDF(epis)}
               sx={{ mr: 1 }}
             >
               Exporter PDF
@@ -92,7 +95,7 @@ const EPIList: React.FC = () => {
             <Button 
               variant="outlined" 
               startIcon={<FileDownloadIcon />} 
-              onClick={handleExportExcel}
+              onClick={() => exportEPIListToExcel(epis)}
             >
               Exporter Excel
             </Button>

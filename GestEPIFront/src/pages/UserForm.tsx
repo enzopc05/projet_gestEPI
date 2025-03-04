@@ -1,4 +1,4 @@
-// Nouveau fichier à créer : GestEPIFront/src/pages/UserForm.tsx
+// GestEPIFront/src/pages/UserForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -100,3 +100,122 @@ const UserForm = () => {
       console.error('Erreur lors de l\'enregistrement:', err);
       setError('Erreur lors de l\'enregistrement de l\'utilisateur');
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: parseInt(value) || 0 }));
+  };
+
+  if (loading) return <Typography>Chargement en cours...</Typography>;
+  
+  return (
+    <Container maxWidth="md">
+      <Box sx={{ my: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {isEditMode ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
+        </Typography>
+        
+        {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
+        
+        <Paper sx={{ p: 3 }}>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Prénom"
+                  name="firstName"
+                  value={formData.firstName || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.firstName}
+                  helperText={formErrors.firstName}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Nom"
+                  name="lastName"
+                  value={formData.lastName || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.lastName}
+                  helperText={formErrors.lastName}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.email}
+                  helperText={formErrors.email}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Téléphone"
+                  name="phone"
+                  value={formData.phone || ''}
+                  onChange={handleChange}
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <FormControl fullWidth required error={!!formErrors.userTypeId}>
+                  <InputLabel>Rôle</InputLabel>
+                  <Select
+                    name="userTypeId"
+                    value={formData.userTypeId?.toString() || ''}
+                    onChange={handleSelectChange}
+                    label="Rôle"
+                  >
+                    {userTypes.map(type => (
+                      <MenuItem key={type.id} value={type.id?.toString()}>
+                        {type.typeName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formErrors.userTypeId && <FormHelperText>{formErrors.userTypeId}</FormHelperText>}
+                </FormControl>
+              </Grid>
+            </Grid>
+            
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/users')}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+              >
+                {isEditMode ? 'Mettre à jour' : 'Créer'}
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+      </Box>
+    </Container>
+  );
+};
+
+export default UserForm;

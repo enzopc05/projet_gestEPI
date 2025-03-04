@@ -1,6 +1,7 @@
+// GestEPIFront/src/pages/CheckList.tsx
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, IconButton, Tabs, Tab } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -9,8 +10,18 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { getAllEPIChecks, getEPIsDueForCheck, deleteEPICheck } from '../services/api';
-import { exportUserListToPDF, exportUserListToExcel } from '../services/exportService';
 import { EPICheck, EPI } from '../types';
+
+// Fonctions d'exportation temporaires (à remplacer par les véritables fonctions)
+const exportChecksToPDF = (checks: EPICheck[]) => {
+  alert('Exportation PDF non implémentée');
+  console.log('Checks à exporter:', checks);
+};
+
+const exportChecksToExcel = (checks: EPICheck[]) => {
+  alert('Exportation Excel non implémentée');
+  console.log('Checks à exporter:', checks);
+};
 
 const CheckList = () => {
   const [checks, setChecks] = useState<EPICheck[]>([]);
@@ -18,6 +29,16 @@ const CheckList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Vérifier si un onglet spécifique est demandé dans l'URL
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setTabValue(parseInt(tabParam));
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,7 +83,6 @@ const CheckList = () => {
   };
 
   if (loading) return <Typography>Chargement en cours...</Typography>;
-  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Container maxWidth="lg">
@@ -78,6 +98,12 @@ const CheckList = () => {
           </Tabs>
         </Box>
         
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
+        
         {tabValue === 0 && (
           <>
             <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
@@ -85,7 +111,7 @@ const CheckList = () => {
                 <Button 
                   variant="outlined" 
                   startIcon={<FileDownloadIcon />} 
-                  onClick={() => exportUserListToPDF(checks)}
+                  onClick={() => exportChecksToPDF(checks)}
                   sx={{ mr: 1 }}
                 >
                   Exporter PDF
@@ -93,7 +119,7 @@ const CheckList = () => {
                 <Button 
                   variant="outlined" 
                   startIcon={<FileDownloadIcon />} 
-                  onClick={() => exportUserListToExcel(checks)}
+                  onClick={() => exportChecksToExcel(checks)}
                 >
                   Exporter Excel
                 </Button>
@@ -108,120 +134,131 @@ const CheckList = () => {
               </Button>
             </Box>
             
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="table des vérifications">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Équipement</TableCell>
-                    <TableCell>Vérificateur</TableCell>
-                    <TableCell>Statut</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {checks.map((check) => (
-                    <TableRow key={check.id}>
-                      <TableCell>{formatDate(check.checkDate)}</TableCell>
-                      <TableCell>{check.epiSerialNumber}</TableCell>
-                      <TableCell>{check.userName}</TableCell>
-                      <TableCell>{check.statusName}</TableCell>
-                      <TableCell>
-                        <IconButton 
-                          component={RouterLink} 
-                          to={`/checks/${check.id}`}
-                          color="primary" 
-                          aria-label="voir"
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                        <IconButton 
-                          component={RouterLink} 
-                          to={`/checks/edit/${check.id}`}
-                          color="primary" 
-                          aria-label="modifier"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton 
-                          color="secondary" 
-                          aria-label="supprimer"
-                          onClick={() => check.id && handleDelete(check.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
+            {checks.length === 0 ? (
+              <Typography variant="body1">Aucune vérification trouvée.</Typography>
+            ) : (
+              <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="table des vérifications">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Équipement</TableCell>
+                      <TableCell>Vérificateur</TableCell>
+                      <TableCell>Statut</TableCell>
+                      <TableCell>Actions</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {checks.map((check) => (
+                      <TableRow key={check.id}>
+                        <TableCell>{formatDate(check.checkDate)}</TableCell>
+                        <TableCell>{check.epiSerialNumber}</TableCell>
+                        <TableCell>{check.userName}</TableCell>
+                        <TableCell>{check.statusName}</TableCell>
+                        <TableCell>
+                          <IconButton 
+                            component={RouterLink} 
+                            to={`/checks/${check.id}`}
+                            color="primary" 
+                            aria-label="voir"
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                          <IconButton 
+                            component={RouterLink} 
+                            to={`/checks/edit/${check.id}`}
+                            color="primary" 
+                            aria-label="modifier"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton 
+                            color="error" 
+                            aria-label="supprimer"
+                            onClick={() => check.id && handleDelete(check.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </>
         )}
         
         {tabValue === 1 && (
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="table des EPIs à vérifier">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Priorité</TableCell>
-                  <TableCell>Équipement</TableCell>
-                  <TableCell>Numéro de série</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Jours restants</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {dueEPIs.map((epi) => (
-                  <TableRow 
-                    key={epi.id}
-                    sx={{ 
-                      backgroundColor: epi.daysUntilNextCheck <= 0 
-                        ? '#ffcccc' 
-                        : epi.daysUntilNextCheck <= 7 
-                          ? '#fff4cc' 
-                          : 'inherit'
-                    }}
-                  >
-                    <TableCell>
-                      {epi.daysUntilNextCheck <= 0 && (
-                        <WarningIcon color="error" fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                      )}
-                      {epi.daysUntilNextCheck <= 0 ? 'Urgent' : epi.daysUntilNextCheck <= 7 ? 'Haute' : 'Normale'}
-                    </TableCell>
-                    <TableCell>{epi.brand} {epi.model}</TableCell>
-                    <TableCell>{epi.serialNumber}</TableCell>
-                    <TableCell>{epi.typeName}</TableCell>
-                    <TableCell>
-                      {epi.daysUntilNextCheck <= 0 
-                        ? `En retard de ${Math.abs(epi.daysUntilNextCheck)} jours` 
-                        : `${epi.daysUntilNextCheck} jours`}
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="contained" 
-                        color="primary"
-                        component={RouterLink}
-                        to={`/checks/new?epiId=${epi.id}`}
-                        size="small"
+          <>
+            {dueEPIs.length === 0 ? (
+              <Typography variant="body1">Aucune vérification à effectuer pour le moment.</Typography>
+            ) : (
+              <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="table des EPIs à vérifier">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Priorité</TableCell>
+                      <TableCell>Équipement</TableCell>
+                      <TableCell>Numéro de série</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Jours restants</TableCell>
+                      <TableCell>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {dueEPIs.map((epi) => (
+                      <TableRow 
+                        key={epi.id}
+                        sx={{ 
+                          backgroundColor: (epi.daysUntilNextCheck || 0) <= 0 
+                            ? '#ffcccc' 
+                            : (epi.daysUntilNextCheck || 0) <= 7 
+                              ? '#fff4cc' 
+                              : 'inherit'
+                        }}
                       >
-                        Vérifier
-                      </Button>
-                      <IconButton 
-                        component={RouterLink} 
-                        to={`/epis/${epi.id}`}
-                        color="primary" 
-                        aria-label="voir"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                        <TableCell>
+                          {(epi.daysUntilNextCheck || 0) <= 0 && (
+                            <WarningIcon color="error" fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          )}
+                          {(epi.daysUntilNextCheck || 0) <= 0 ? 'Urgent' : (epi.daysUntilNextCheck || 0) <= 7 ? 'Haute' : 'Normale'}
+                        </TableCell>
+                        <TableCell>{epi.brand} {epi.model}</TableCell>
+                        <TableCell>{epi.serialNumber}</TableCell>
+                        <TableCell>{epi.typeName}</TableCell>
+                        <TableCell>
+                          {(epi.daysUntilNextCheck || 0) <= 0 
+                            ? `En retard de ${Math.abs(epi.daysUntilNextCheck || 0)} jours` 
+                            : `${epi.daysUntilNextCheck} jours`}
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="contained" 
+                            color="primary"
+                            component={RouterLink}
+                            to={`/checks/new?epiId=${epi.id}`}
+                            size="small"
+                            sx={{ mr: 1 }}
+                          >
+                            Vérifier
+                          </Button>
+                          <IconButton 
+                            component={RouterLink} 
+                            to={`/epis/${epi.id}`}
+                            color="primary" 
+                            aria-label="voir"
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </>
         )}
       </Box>
     </Container>
