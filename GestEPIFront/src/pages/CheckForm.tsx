@@ -56,8 +56,13 @@ const CheckForm = () => {
           getAllEPIStatus()
         ]);
         
+        console.log("Statuts récupérés:", statusesData);
+        
+        // Filtrer les utilisateurs pour ne garder que les vérificateurs (userTypeId = 2) et admins (userTypeId = 1)
+        const filteredUsers = usersData.filter(user => user.userTypeId === 1 || user.userTypeId === 2);
+        
         setEpis(episData);
-        setUsers(usersData);
+        setUsers(filteredUsers); // Utiliser la liste filtrée
         setStatuses(statusesData);
 
         // Si en mode édition, charger les détails de la vérification
@@ -209,13 +214,18 @@ const CheckForm = () => {
                     onChange={handleSelectChange}
                     label="Statut"
                   >
-                    {statuses.map(status => (
-                      <MenuItem key={status.id} value={status.id?.toString()}>
-                        {status.statusName}
-                      </MenuItem>
-                    ))}
+                    {statuses.length > 0 ? (
+                      statuses.map(status => (
+                        <MenuItem key={status.id} value={status.id?.toString()}>
+                          {status.statusName}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>Aucun statut disponible</MenuItem>
+                    )}
                   </Select>
                   {formErrors.statusId && <FormHelperText>{formErrors.statusId}</FormHelperText>}
+                  {statuses.length === 0 && <FormHelperText>Aucun statut trouvé dans la base de données</FormHelperText>}
                 </FormControl>
               </Grid>
               

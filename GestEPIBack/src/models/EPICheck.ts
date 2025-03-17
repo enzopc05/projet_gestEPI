@@ -132,15 +132,16 @@ export async function getEPIsDueForCheck() {
   let conn;
   try {
     conn = await db.getConnection();
-    const currentDate = new Date();
     
-    // Récupérer les EPIs qui doivent être vérifiés (date de dernière vérification + périodicité < aujourd'hui)
-    return await conn.query(`
-      SELECT e.*, et.typeName, es.statusName,
+    // Requête modifiée pour récupérer correctement les EPIs à vérifier
+    const [rows] = await conn.query(`
+      SELECT e.*, 
+        et.typeName, 
+        es.statusName,
         DATEDIFF(
           DATE_ADD(
             IFNULL(
-              (SELECT MAX(ec.checkDate) FROM epi_Check ec WHERE ec.epiId = e.id),
+              (SELECT MAX(ec.checkDate) FROM epi_check ec WHERE ec.epiId = e.id),
               e.serviceStartDate
             ),
             INTERVAL e.periodicity MONTH
@@ -148,14 +149,14 @@ export async function getEPIsDueForCheck() {
           CURDATE()
         ) as daysUntilNextCheck
       FROM epi e
-      JOIN epiTypes et ON e.epiTypeId = et.id
-      JOIN epiStatus es ON e.statusId = es.id
+      JOIN epitypes et ON e.epiTypeId = et.id
+      JOIN epistatus es ON e.statusId = es.id
       WHERE 
         e.statusId = 1 AND
         DATEDIFF(
           DATE_ADD(
             IFNULL(
-              (SELECT MAX(ec.checkDate) FROM epi_Check ec WHERE ec.epiId = e.id),
+              (SELECT MAX(ec.checkDate) FROM epi_check ec WHERE ec.epiId = e.id),
               e.serviceStartDate
             ),
             INTERVAL e.periodicity MONTH
@@ -164,6 +165,9 @@ export async function getEPIsDueForCheck() {
         ) <= 30
       ORDER BY daysUntilNextCheck ASC
     `);
+    
+    console.log("EPIs à vérifier:", rows);
+    return rows;
   } catch (err) {
     console.error('Erreur lors de la récupération des EPIs à vérifier:', err);
     throw err;

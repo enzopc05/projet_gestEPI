@@ -12,7 +12,11 @@ import dashboardRoutes from "./routes/dashboard"; // Ajouté
 require("dotenv").config();
 
 //********** Server **********//
-const allowedOrigins = ["http://localhost:3000", "http://127.0.0.1:3000"];
+const allowedOrigins = [
+  "http://localhost:3000", 
+  "http://127.0.0.1:3000",
+  "http://192.168.56.1:3000" // Ajout de cette origine
+];
 
 const options: cors.CorsOptions = {
   origin: allowedOrigins,
@@ -31,6 +35,11 @@ app.use('/api/epi-status', epiStatusRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/epi-checks', epiCheckRoutes);
 app.use('/api/dashboard', dashboardRoutes); // Ajouté
+
+// Route racine
+app.get('/', (req, res) => {
+  res.json({ message: 'Bienvenue sur l\'API GestEPI. Utilisez /api/epis, /api/epi-types, etc.' });
+});
 
 // Erreur 404 pour les routes non trouvées
 app.use(middlewares.notFound);

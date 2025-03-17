@@ -342,18 +342,18 @@ const Dashboard = () => {
                         />
                       </ListItem>
                     ))}
-                    {dueEPIs.length > 5 && (
-                      <ListItem>
-                        <ListItemText 
-                          primary={`+ ${dueEPIs.length - 5} autres équipements à vérifier`}
-                          primaryTypographyProps={{ 
-                            variant: 'body2', 
-                            color: 'text.secondary',
-                            align: 'center'
-                          }}
-                        />
-                      </ListItem>
-                    )}
+{dueEPIs.length > 5 && (
+  <ListItem key="more-items">
+    <ListItemText 
+      primary={`+ ${dueEPIs.length - 5} autres équipements à vérifier`}
+      primaryTypographyProps={{ 
+        variant: 'body2', 
+        color: 'text.secondary',
+        align: 'center'
+      }}
+    />
+  </ListItem>
+)}
                   </List>
                 )}
               </CardContent>

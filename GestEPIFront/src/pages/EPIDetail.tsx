@@ -16,9 +16,12 @@ const EPIDetail = () => {
   useEffect(() => {
     const fetchEPI = async () => {
       try {
-        if (id) {
+        // Vérifier que l'ID est défini et valide avant d'effectuer la requête
+        if (id && !isNaN(parseInt(id))) {
           const data = await getEPIById(parseInt(id));
           setEpi(data);
+        } else {
+          setError('Identifiant d\'EPI invalide');
         }
         setLoading(false);
       } catch (err) {

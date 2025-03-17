@@ -40,27 +40,30 @@ const CheckList = () => {
     }
   }, [location]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        if (tabValue === 0) {
-          const checksData = await getAllEPIChecks();
-          setChecks(checksData);
-        } else {
-          const dueData = await getEPIsDueForCheck();
-          setDueEPIs(dueData);
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error('Erreur lors du chargement des données:', err);
-        setError('Erreur lors du chargement des données');
-        setLoading(false);
+// Dans GestEPIFront/src/pages/CheckList.tsx, dans l'effet useEffect
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      if (tabValue === 0) {
+        const checksData = await getAllEPIChecks();
+        console.log("Vérifications récupérées:", checksData);
+        setChecks(checksData);
+      } else {
+        const dueData = await getEPIsDueForCheck();
+        console.log("EPIs à vérifier récupérés:", dueData);
+        setDueEPIs(dueData);
       }
-    };
+      setLoading(false);
+    } catch (err) {
+      console.error('Erreur lors du chargement des données:', err);
+      setError('Erreur lors du chargement des données');
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, [tabValue]);
+  fetchData();
+}, [tabValue]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);

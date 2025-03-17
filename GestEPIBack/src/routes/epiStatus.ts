@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     const epiStatus = await epiStatusModel.getAllEPIStatus();
+    console.log("Statuts envoyés au frontend:", epiStatus);
     res.json(epiStatus);
   } catch (error) {
     next(error);

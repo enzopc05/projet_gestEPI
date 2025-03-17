@@ -1,4 +1,5 @@
 import db from '../config/db';
+import { RowDataPacket } from 'mysql2';
 
 export interface EPIStatus {
   id?: number;
@@ -9,7 +10,8 @@ export async function getAllEPIStatus() {
   let conn;
   try {
     conn = await db.getConnection();
-    return await conn.query("SELECT * FROM epiStatus");
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT * FROM epistatus");
+    return rows;
   } catch (err) {
     console.error('Erreur lors de la récupération des statuts d\'EPI:', err);
     throw err;
@@ -22,8 +24,8 @@ export async function getEPIStatusById(id: number) {
   let conn;
   try {
     conn = await db.getConnection();
-    const results = await conn.query("SELECT * FROM epiStatus WHERE id = ?", [id]);
-    return results[0];
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT * FROM epistatus WHERE id = ?", [id]);
+    return rows[0];
   } catch (err) {
     console.error('Erreur lors de la récupération du statut d\'EPI:', err);
     throw err;
