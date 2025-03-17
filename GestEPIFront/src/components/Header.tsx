@@ -46,6 +46,9 @@ const Header = () => {
           <Button color="inherit" component={RouterLink} to="/epis">
             EPIs
           </Button>
+          <Button color="inherit" component={RouterLink} to="/users">
+  Utilisateurs
+</Button>
           <Button color="inherit" component={RouterLink} to="/checks">
             Vérifications
             {pendingChecks > 0 && (
@@ -58,6 +61,7 @@ const Header = () => {
               </Badge>
             )}
           </Button>
+          
         </Box>
       </Toolbar>
     </AppBar>

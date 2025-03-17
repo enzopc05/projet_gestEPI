@@ -47,11 +47,14 @@ export async function createEPI(epi: EPI) {
   let conn;
   try {
     conn = await db.getConnection();
-    const result = await conn.query(
+    const [result] = await conn.query(
       "INSERT INTO epi (brand, model, serialNumber, size, color, purchaseDate, manufactureDate, serviceStartDate, periodicity, epiTypeId, statusId, endOfLifeDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [epi.brand, epi.model, epi.serialNumber, epi.size, epi.color, epi.purchaseDate, epi.manufactureDate, epi.serviceStartDate, epi.periodicity, epi.epiTypeId, epi.statusId, epi.endOfLifeDate]
     );
-    return { id: result.insertId, ...epi };
+    
+    return { id: (result as any).insertId, ...epi };
+    // Ou de manière plus propre en typant correctement:
+    // return { id: (result as { insertId: number }).insertId, ...epi };
   } catch (err) {
     console.error('Erreur lors de la création de l\'EPI:', err);
     throw err;

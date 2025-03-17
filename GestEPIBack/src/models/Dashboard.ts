@@ -6,11 +6,12 @@ export async function getEPIStats() {
     conn = await db.getConnection();
     
     // Statistiques générales
-    const epiCountResult = await conn.query("SELECT COUNT(*) as total FROM epi");
-    const epiCount = epiCountResult[0].total;
+    const [epiCountResult] = await conn.query("SELECT COUNT(*) as total FROM epi");
+    // Utiliser une assertion de type ou accéder au premier élément du tableau de résultats
+    const epiCount = (epiCountResult as any[])[0].total;
     
     // Répartition par type
-    const epiByTypeResult = await conn.query(`
+    const [epiByTypeResult] = await conn.query(`
       SELECT et.typeName, COUNT(*) as count 
       FROM epi e 
       JOIN epiTypes et ON e.epiTypeId = et.id 
@@ -19,7 +20,7 @@ export async function getEPIStats() {
     `);
     
     // Répartition par statut
-    const epiByStatusResult = await conn.query(`
+    const [epiByStatusResult] = await conn.query(`
       SELECT es.statusName, COUNT(*) as count 
       FROM epi e 
       JOIN epiStatus es ON e.statusId = es.id 
@@ -28,7 +29,7 @@ export async function getEPIStats() {
     `);
     
     // Vérifications à venir
-    const pendingChecksResult = await conn.query(`
+    const [pendingChecksResult] = await conn.query(`
       SELECT COUNT(*) as count,
       SUM(CASE WHEN daysUntilNextCheck <= 0 THEN 1 ELSE 0 END) as urgent,
       SUM(CASE WHEN daysUntilNextCheck > 0 AND daysUntilNextCheck <= 7 THEN 1 ELSE 0 END) as soon,
@@ -52,7 +53,7 @@ export async function getEPIStats() {
     `);
     
     // Historique des vérifications par mois (12 derniers mois)
-    const checksHistoryResult = await conn.query(`
+    const [checksHistoryResult] = await conn.query(`
       SELECT 
         DATE_FORMAT(checkDate, '%Y-%m') as month,
         COUNT(*) as count
@@ -66,7 +67,7 @@ export async function getEPIStats() {
       epiCount,
       epiByType: epiByTypeResult,
       epiByStatus: epiByStatusResult,
-      pendingChecks: pendingChecksResult[0],
+      pendingChecks: (pendingChecksResult as any[])[0],
       checksHistory: checksHistoryResult
     };
   } catch (err) {

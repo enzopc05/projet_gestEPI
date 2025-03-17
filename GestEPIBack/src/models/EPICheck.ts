@@ -13,17 +13,19 @@ export async function getAllEPIChecks() {
   let conn;
   try {
     conn = await db.getConnection();
-    return await conn.query(`
+    const [rows] = await conn.query(`
       SELECT ec.*, 
         CONCAT(u.firstName, ' ', u.lastName) as userName, 
         e.serialNumber as epiSerialNumber,
-        es.statusName as statusName
+        es.statusName as statusName,
+        DATE_FORMAT(ec.checkDate, '%Y-%m-%d') as checkDate
       FROM epi_Check ec 
       JOIN users u ON ec.userId = u.id 
       JOIN epi e ON ec.epiId = e.id
       JOIN epiStatus es ON ec.statusId = es.id
       ORDER BY ec.checkDate DESC
     `);
+    return rows;
   } catch (err) {
     console.error('Erreur lors de la récupération des vérifications:', err);
     throw err;
@@ -82,11 +84,11 @@ export async function createEPICheck(check: EPICheck) {
   let conn;
   try {
     conn = await db.getConnection();
-    const result = await conn.query(
+    const [result] = await conn.query(
       "INSERT INTO epi_Check (checkDate, userId, epiId, statusId, remarks) VALUES (?, ?, ?, ?, ?)",
       [check.checkDate, check.userId, check.epiId, check.statusId, check.remarks]
     );
-    return { id: result.insertId, ...check };
+    return { id: (result as any).insertId, ...check };
   } catch (err) {
     console.error('Erreur lors de la création de la vérification:', err);
     throw err;

@@ -78,9 +78,23 @@ const CheckList = () => {
     }
   };
 
-  const formatDate = (date: Date | string) => {
-    return format(new Date(date), 'dd/MM/yyyy', { locale: fr });
-  };
+// Modifiez la fonction formatDate pour qu'elle gère correctement les chaînes de caractères de date
+const formatDate = (dateString: Date | string) => {
+  try {
+    // S'assurer que la date est valide avant de la formater
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    
+    // Vérifier si la date est valide
+    if (isNaN(date.getTime())) {
+      return "Date invalide";
+    }
+    
+    return format(date, 'dd/MM/yyyy', { locale: fr });
+  } catch (error) {
+    console.error("Erreur de formatage de date:", error, dateString);
+    return "Date invalide";
+  }
+};
 
   if (loading) return <Typography>Chargement en cours...</Typography>;
 

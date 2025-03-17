@@ -40,11 +40,11 @@ export async function createUser(user: User) {
   let conn;
   try {
     conn = await db.getConnection();
-    const result = await conn.query(
+    const [result] = await conn.query(
       "INSERT INTO users (firstName, lastName, email, phone, userTypeId) VALUES (?, ?, ?, ?, ?)",
       [user.firstName, user.lastName, user.email, user.phone, user.userTypeId]
     );
-    return { id: result.insertId, ...user };
+    return { id: (result as any).insertId, ...user };
   } catch (err) {
     console.error('Erreur lors de la création de l\'utilisateur:', err);
     throw err;
