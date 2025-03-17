@@ -19,10 +19,10 @@ export async function getAllEPIChecks() {
         e.serialNumber as epiSerialNumber,
         es.statusName as statusName,
         DATE_FORMAT(ec.checkDate, '%Y-%m-%d') as checkDate
-      FROM epi_Check ec 
+      FROM epi_check ec 
       JOIN users u ON ec.userId = u.id 
       JOIN epi e ON ec.epiId = e.id
-      JOIN epiStatus es ON ec.statusId = es.id
+      JOIN epistatus es ON ec.statusId = es.id
       ORDER BY ec.checkDate DESC
     `);
     return rows;
@@ -85,7 +85,7 @@ export async function createEPICheck(check: EPICheck) {
   try {
     conn = await db.getConnection();
     const [result] = await conn.query(
-      "INSERT INTO epi_Check (checkDate, userId, epiId, statusId, remarks) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO epi_check (checkDate, userId, epiId, statusId, remarks) VALUES (?, ?, ?, ?, ?)",
       [check.checkDate, check.userId, check.epiId, check.statusId, check.remarks]
     );
     return { id: (result as any).insertId, ...check };

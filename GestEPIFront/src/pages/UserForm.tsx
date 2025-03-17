@@ -96,9 +96,11 @@ const UserForm = () => {
       }
       
       navigate('/users');
-    } catch (err) {
+    } catch (err: any) {  // Ajouter le type any ici
       console.error('Erreur lors de l\'enregistrement:', err);
-      setError('Erreur lors de l\'enregistrement de l\'utilisateur');
+      console.log('Détails de l\'erreur:', err.response?.data || err.message);
+      console.log('Données envoyées:', formData);
+      setError('Erreur lors de l\'enregistrement de l\'utilisateur: ' + (err.response?.data?.message || err.message));
     }
   };
 

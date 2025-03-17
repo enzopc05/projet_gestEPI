@@ -1,4 +1,5 @@
 import db from '../config/db';
+import { RowDataPacket, OkPacket, ResultSetHeader } from 'mysql2';
 
 export interface EPI {
   id?: number;
@@ -20,7 +21,8 @@ export async function getAllEPIs() {
   let conn;
   try {
     conn = await db.getConnection();
-    return await conn.query("SELECT e.*, et.typeName as typeName, es.statusName as statusName FROM epi e JOIN epiTypes et ON e.epiTypeId = et.id JOIN epiStatus es ON e.statusId = es.id");
+    const result = await conn.query("SELECT e.*, et.typeName as typeName, es.statusName as statusName FROM epi e JOIN epitypes et ON e.epiTypeId = et.id JOIN epistatus es ON e.statusId = es.id");
+    return (result as any[])[0];
   } catch (err) {
     console.error('Erreur lors de la récupération des EPIs:', err);
     throw err;
@@ -33,8 +35,8 @@ export async function getEPIById(id: number) {
   let conn;
   try {
     conn = await db.getConnection();
-    const results = await conn.query("SELECT e.*, et.typeName as typeName, es.statusName as statusName FROM epi e JOIN epiTypes et ON e.epiTypeId = et.id JOIN epiStatus es ON e.statusId = es.id WHERE e.id = ?", [id]);
-    return results[0];
+    const result = await conn.query("SELECT e.*, et.typeName as typeName, es.statusName as statusName FROM epi e JOIN epitypes et ON e.epiTypeId = et.id JOIN epistatus es ON e.statusId = es.id WHERE e.id = ?", [id]);
+    return (result as any[])[0][0];
   } catch (err) {
     console.error('Erreur lors de la récupération de l\'EPI:', err);
     throw err;
@@ -47,14 +49,12 @@ export async function createEPI(epi: EPI) {
   let conn;
   try {
     conn = await db.getConnection();
-    const [result] = await conn.query(
+    const [result] = await conn.query<ResultSetHeader>(
       "INSERT INTO epi (brand, model, serialNumber, size, color, purchaseDate, manufactureDate, serviceStartDate, periodicity, epiTypeId, statusId, endOfLifeDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [epi.brand, epi.model, epi.serialNumber, epi.size, epi.color, epi.purchaseDate, epi.manufactureDate, epi.serviceStartDate, epi.periodicity, epi.epiTypeId, epi.statusId, epi.endOfLifeDate]
     );
     
-    return { id: (result as any).insertId, ...epi };
-    // Ou de manière plus propre en typant correctement:
-    // return { id: (result as { insertId: number }).insertId, ...epi };
+    return { id: result.insertId, ...epi };
   } catch (err) {
     console.error('Erreur lors de la création de l\'EPI:', err);
     throw err;

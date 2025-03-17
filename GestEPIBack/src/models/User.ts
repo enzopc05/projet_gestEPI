@@ -1,4 +1,5 @@
 import db from '../config/db';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export interface User {
   id?: number;
@@ -13,7 +14,8 @@ export async function getAllUsers() {
   let conn;
   try {
     conn = await db.getConnection();
-    return await conn.query("SELECT u.*, ut.typeName FROM users u JOIN userTypes ut ON u.userTypeId = ut.id");
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT u.*, ut.typeName FROM users u JOIN usertypes ut ON u.userTypeId = ut.id");
+    return rows;
   } catch (err) {
     console.error('Erreur lors de la récupération des utilisateurs:', err);
     throw err;
@@ -26,8 +28,8 @@ export async function getUserById(id: number) {
   let conn;
   try {
     conn = await db.getConnection();
-    const results = await conn.query("SELECT u.*, ut.typeName FROM users u JOIN userTypes ut ON u.userTypeId = ut.id WHERE u.id = ?", [id]);
-    return results[0];
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT u.*, ut.typeName FROM users u JOIN usertypes ut ON u.userTypeId = ut.id WHERE u.id = ?", [id]);
+    return rows[0];
   } catch (err) {
     console.error('Erreur lors de la récupération de l\'utilisateur:', err);
     throw err;
@@ -40,11 +42,11 @@ export async function createUser(user: User) {
   let conn;
   try {
     conn = await db.getConnection();
-    const [result] = await conn.query(
+    const [result] = await conn.query<ResultSetHeader>(
       "INSERT INTO users (firstName, lastName, email, phone, userTypeId) VALUES (?, ?, ?, ?, ?)",
       [user.firstName, user.lastName, user.email, user.phone, user.userTypeId]
     );
-    return { id: (result as any).insertId, ...user };
+    return { id: result.insertId, ...user };
   } catch (err) {
     console.error('Erreur lors de la création de l\'utilisateur:', err);
     throw err;
@@ -57,7 +59,7 @@ export async function updateUser(id: number, user: User) {
   let conn;
   try {
     conn = await db.getConnection();
-    await conn.query(
+    await conn.query<ResultSetHeader>(
       "UPDATE users SET firstName = ?, lastName = ?, email = ?, phone = ?, userTypeId = ? WHERE id = ?",
       [user.firstName, user.lastName, user.email, user.phone, user.userTypeId, id]
     );
@@ -74,7 +76,7 @@ export async function deleteUser(id: number) {
   let conn;
   try {
     conn = await db.getConnection();
-    await conn.query("DELETE FROM users WHERE id = ?", [id]);
+    await conn.query<ResultSetHeader>("DELETE FROM users WHERE id = ?", [id]);
     return { id };
   } catch (err) {
     console.error('Erreur lors de la suppression de l\'utilisateur:', err);

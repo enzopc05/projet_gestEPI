@@ -7,14 +7,13 @@ export async function getEPIStats() {
     
     // Statistiques générales
     const [epiCountResult] = await conn.query("SELECT COUNT(*) as total FROM epi");
-    // Utiliser une assertion de type ou accéder au premier élément du tableau de résultats
     const epiCount = (epiCountResult as any[])[0].total;
     
     // Répartition par type
     const [epiByTypeResult] = await conn.query(`
       SELECT et.typeName, COUNT(*) as count 
       FROM epi e 
-      JOIN epiTypes et ON e.epiTypeId = et.id 
+      JOIN epitypes et ON e.epiTypeId = et.id 
       GROUP BY e.epiTypeId
       ORDER BY count DESC
     `);
@@ -23,7 +22,7 @@ export async function getEPIStats() {
     const [epiByStatusResult] = await conn.query(`
       SELECT es.statusName, COUNT(*) as count 
       FROM epi e 
-      JOIN epiStatus es ON e.statusId = es.id 
+      JOIN epistatus es ON e.statusId = es.id 
       GROUP BY e.statusId
       ORDER BY count DESC
     `);
@@ -39,7 +38,7 @@ export async function getEPIStats() {
           DATEDIFF(
             DATE_ADD(
               IFNULL(
-                (SELECT MAX(ec.checkDate) FROM epi_Check ec WHERE ec.epiId = e.id),
+                (SELECT MAX(ec.checkDate) FROM epi_check ec WHERE ec.epiId = e.id),
                 e.serviceStartDate
               ),
               INTERVAL e.periodicity MONTH
@@ -57,7 +56,7 @@ export async function getEPIStats() {
       SELECT 
         DATE_FORMAT(checkDate, '%Y-%m') as month,
         COUNT(*) as count
-      FROM epi_Check
+      FROM epi_check
       WHERE checkDate >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       GROUP BY month
       ORDER BY month ASC
