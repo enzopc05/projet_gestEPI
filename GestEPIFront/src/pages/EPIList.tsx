@@ -22,17 +22,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { getAllEPIs, deleteEPI } from '../services/api';
 import { EPI } from '../types';
-
-// Fonctions d'exportation temporaires (à remplacer par les véritables fonctions)
-const exportEPIListToPDF = (epis: EPI[]) => {
-  alert('Exportation PDF non implémentée');
-  console.log('EPIs à exporter:', epis);
-};
-
-const exportEPIListToExcel = (epis: EPI[]) => {
-  alert('Exportation Excel non implémentée');
-  console.log('EPIs à exporter:', epis);
-};
+import { exportEPIListToPDF, exportEPIListToExcel } from '../services/exportService';
 
 const EPIList: React.FC = () => {
   const [epis, setEpis] = useState<EPI[]>([]);

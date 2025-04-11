@@ -11,17 +11,7 @@ import fr from 'date-fns/locale/fr';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { getAllEPIChecks, getEPIsDueForCheck, deleteEPICheck } from '../services/api';
 import { EPICheck, EPI } from '../types';
-
-// Fonctions d'exportation temporaires (à remplacer par les véritables fonctions)
-const exportChecksToPDF = (checks: EPICheck[]) => {
-  alert('Exportation PDF non implémentée');
-  console.log('Checks à exporter:', checks);
-};
-
-const exportChecksToExcel = (checks: EPICheck[]) => {
-  alert('Exportation Excel non implémentée');
-  console.log('Checks à exporter:', checks);
-};
+import { exportCheckListToPDF as exportChecksToPDF, exportCheckListToExcel as exportChecksToExcel } from '../services/exportService';
 
 const CheckList = () => {
   const [checks, setChecks] = useState<EPICheck[]>([]);

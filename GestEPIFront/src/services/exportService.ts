@@ -1,6 +1,5 @@
-// À ajouter dans GestEPIFront/src/services/exportService.ts
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable'; // Importation explicite
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import format from 'date-fns/format';
@@ -34,7 +33,8 @@ export const exportDashboardStatsToPDF = (stats: any) => {
     ['Vérifications à venir', (stats.pendingChecks.soon + stats.pendingChecks.upcoming).toString()]
   ];
   
-  (doc as any).autoTable({
+  // Utilisation d'autoTable avec l'importation explicite
+  autoTable(doc, {
     body: generalStats,
     startY: 50,
     theme: 'plain',
@@ -43,45 +43,48 @@ export const exportDashboardStatsToPDF = (stats: any) => {
   
   // Répartition par type
   doc.setFontSize(14);
-  doc.text('Répartition par type', 14, (doc as any).lastAutoTable.finalY + 15);
+  const finalY1 = (doc as any).lastAutoTable?.finalY || 70;
+  doc.text('Répartition par type', 14, finalY1 + 15);
   
   const typeStats = stats.epiByType.map((item: any) => [item.typeName, item.count.toString()]);
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     head: [['Type', 'Nombre']],
     body: typeStats,
-    startY: (doc as any).lastAutoTable.finalY + 20,
+    startY: finalY1 + 20,
     styles: { fontSize: 10 },
     headStyles: { fillColor: [41, 128, 185] }
   });
   
   // Répartition par statut
   doc.setFontSize(14);
-  doc.text('Répartition par statut', 14, (doc as any).lastAutoTable.finalY + 15);
+  const finalY2 = (doc as any).lastAutoTable?.finalY || (finalY1 + 60);
+  doc.text('Répartition par statut', 14, finalY2 + 15);
   
   const statusStats = stats.epiByStatus.map((item: any) => [item.statusName, item.count.toString()]);
   
-  (doc as any).autoTable({
+  autoTable(doc, {
     head: [['Statut', 'Nombre']],
     body: statusStats,
-    startY: (doc as any).lastAutoTable.finalY + 20,
+    startY: finalY2 + 20,
     styles: { fontSize: 10 },
     headStyles: { fillColor: [41, 128, 185] }
   });
   
   // Historique des vérifications
-  if (stats.checksHistory.length > 0) {
+  if (stats.checksHistory && stats.checksHistory.length > 0) {
     doc.addPage();
     doc.setFontSize(14);
     doc.text('Historique des vérifications', 14, 20);
     
     const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
     const historyStats = stats.checksHistory.map((item: any) => {
+      if (!item.month) return ['Inconnu', item.count.toString()];
       const [year, month] = item.month.split('-');
       return [`${monthNames[parseInt(month) - 1]} ${year}`, item.count.toString()];
     });
     
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [['Mois', 'Nombre de vérifications']],
       body: historyStats,
       startY: 25,
@@ -117,7 +120,7 @@ export const exportUserListToPDF = (users: User[]) => {
   ]);
   
   // Ajout du tableau au document
-  (doc as any).autoTable({
+  autoTable(doc, {
     head: [tableColumn],
     body: tableRows,
     startY: 40,
@@ -160,4 +163,154 @@ export const exportUserListToExcel = (users: User[]) => {
   
   // Sauvegarde du fichier
   saveAs(data, 'liste_utilisateurs.xlsx');
+};
+
+// Fonction pour exporter la liste des EPIs en PDF
+export const exportEPIListToPDF = (epis: EPI[]) => {
+  const doc = new jsPDF();
+  
+  // Titre du document
+  doc.setFontSize(18);
+  doc.text('Liste des EPIs', 14, 22);
+  
+  // Date d'exportation
+  doc.setFontSize(11);
+  doc.text(`Exporté le ${format(new Date(), 'dd/MM/yyyy', { locale: fr })}`, 14, 30);
+  
+  // Préparation des données pour le tableau
+  const tableColumn = ["Marque", "Modèle", "N° de série", "Type", "Statut"];
+  const tableRows = epis.map(epi => [
+    epi.brand || '',
+    epi.model || '',
+    epi.serialNumber || '',
+    epi.typeName || '',
+    epi.statusName || ''
+  ]);
+  
+  // Ajout du tableau au document
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 40,
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+      valign: 'middle'
+    },
+    headStyles: {
+      fillColor: [41, 128, 185],
+      textColor: 255
+    },
+    alternateRowStyles: {
+      fillColor: [240, 240, 240]
+    }
+  });
+  
+  // Sauvegarde du document
+  doc.save('liste_epis.pdf');
+};
+
+// Fonction pour exporter la liste des EPIs en Excel
+export const exportEPIListToExcel = (epis: EPI[]) => {
+  // Préparation des données
+  const worksheet = XLSX.utils.json_to_sheet(epis.map(epi => ({
+    "Marque": epi.brand || '',
+    "Modèle": epi.model || '',
+    "N° de série": epi.serialNumber || '',
+    "Taille": epi.size || '',
+    "Couleur": epi.color || '',
+    "Type": epi.typeName || '',
+    "Statut": epi.statusName || '',
+    "Date d'achat": formatDate(epi.purchaseDate)
+  })));
+  
+  // Création du workbook et ajout de la feuille
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "EPIs");
+  
+  // Génération du fichier
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+  // Sauvegarde du fichier
+  saveAs(data, 'liste_epis.xlsx');
+};
+
+// Fonction pour exporter la liste des vérifications en PDF
+export const exportCheckListToPDF = (checks: EPICheck[]) => {
+  const doc = new jsPDF();
+  
+  // Titre du document
+  doc.setFontSize(18);
+  doc.text('Liste des Vérifications', 14, 22);
+  
+  // Date d'exportation
+  doc.setFontSize(11);
+  doc.text(`Exporté le ${format(new Date(), 'dd/MM/yyyy', { locale: fr })}`, 14, 30);
+  
+  // Préparation des données pour le tableau
+  const tableColumn = ["Date", "Équipement", "Vérificateur", "Statut", "Remarques"];
+  const tableRows = checks.map(check => [
+    formatDate(check.checkDate) || '',
+    check.epiSerialNumber || '',
+    check.userName || '',
+    check.statusName || '',
+    (check.remarks || '').substring(0, 40) + ((check.remarks && check.remarks.length > 40) ? '...' : '')
+  ]);
+  
+  // Ajout du tableau au document
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 40,
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+      valign: 'middle'
+    },
+    headStyles: {
+      fillColor: [41, 128, 185],
+      textColor: 255
+    },
+    alternateRowStyles: {
+      fillColor: [240, 240, 240]
+    }
+  });
+  
+  // Sauvegarde du document
+  doc.save('liste_verifications.pdf');
+};
+
+// Fonction pour exporter la liste des vérifications en Excel
+export const exportCheckListToExcel = (checks: EPICheck[]) => {
+  // Préparation des données
+  const worksheet = XLSX.utils.json_to_sheet(checks.map(check => ({
+    "Date": formatDate(check.checkDate) || '',
+    "Équipement": check.epiSerialNumber || '',
+    "Vérificateur": check.userName || '',
+    "Statut": check.statusName || '',
+    "Remarques": check.remarks || ''
+  })));
+  
+  // Création du workbook et ajout de la feuille
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Vérifications");
+  
+  // Génération du fichier
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+  // Sauvegarde du fichier
+  saveAs(data, 'liste_verifications.xlsx');
+};
+
+// Fonction utilitaire pour formater les dates
+const formatDate = (date: Date | string | undefined): string => {
+  if (!date) return '';
+  try {
+    return format(new Date(date), 'dd/MM/yyyy', { locale: fr });
+  } catch (error) {
+    console.error('Erreur de formatage de date:', error);
+    return '';
+  }
 };
