@@ -1,4 +1,3 @@
-// GestEPIFront/src/pages/UserForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -14,10 +13,12 @@ import {
   MenuItem, 
   Paper, 
   FormHelperText,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Divider
 } from '@mui/material';
 import { createUser, getUserById, updateUser } from '../services/api';
 import { User } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UserType {
   id: number;
@@ -27,14 +28,17 @@ interface UserType {
 const UserForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const isEditMode = Boolean(id);
 
-  const [formData, setFormData] = useState<Partial<User>>({
+  const [formData, setFormData] = useState<Partial<User & { password?: string, confirmPassword?: string }>>({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-    userTypeId: 0
+    userTypeId: 0,
+    password: '',
+    confirmPassword: ''
   });
 
   const [userTypes, setUserTypes] = useState<UserType[]>([
@@ -52,7 +56,12 @@ const UserForm = () => {
       if (isEditMode && id) {
         try {
           const userData = await getUserById(parseInt(id));
-          setFormData(userData);
+          // Ne pas inclure le mot de passe dans les données récupérées
+          setFormData({
+            ...userData,
+            password: '',
+            confirmPassword: ''
+          });
           setLoading(false);
         } catch (err) {
           console.error('Erreur lors du chargement de l\'utilisateur:', err);
@@ -77,6 +86,18 @@ const UserForm = () => {
     }
     if (!formData.userTypeId) errors.userTypeId = 'Le rôle est requis';
     
+    // Validation du mot de passe uniquement si c'est un nouvel utilisateur ou si le mot de passe est modifié
+    if (!isEditMode && !formData.password) {
+      errors.password = 'Le mot de passe est requis pour un nouvel utilisateur';
+    } else if (formData.password) {
+      if (formData.password.length < 6) {
+        errors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+      }
+      if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Les mots de passe ne correspondent pas';
+      }
+    }
+    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -89,14 +110,27 @@ const UserForm = () => {
     }
     
     try {
-      if (isEditMode && id) {
-        await updateUser(parseInt(id), formData as User);
+      // Supprimer confirmPassword avant d'envoyer au serveur
+      const { confirmPassword, ...userData } = formData;
+      
+      // Si mot de passe vide en mode édition, ne pas l'envoyer
+      if (isEditMode && !userData.password) {
+        const { password, ...userDataWithoutPassword } = userData;
+        userData as User;
+        
+        if (id) {
+          await updateUser(parseInt(id), userDataWithoutPassword as User);
+        }
       } else {
-        await createUser(formData as User);
+        if (isEditMode && id) {
+          await updateUser(parseInt(id), userData as User);
+        } else {
+          await createUser(userData as User);
+        }
       }
       
       navigate('/users');
-    } catch (err: any) {  // Ajouter le type any ici
+    } catch (err: any) {
       console.error('Erreur lors de l\'enregistrement:', err);
       console.log('Détails de l\'erreur:', err.response?.data || err.message);
       console.log('Données envoyées:', formData);
@@ -186,15 +220,58 @@ const UserForm = () => {
                     value={formData.userTypeId?.toString() || ''}
                     onChange={handleSelectChange}
                     label="Rôle"
+                    disabled={!isAdmin} // Seuls les admins peuvent changer les rôles
                   >
                     {userTypes.map(type => (
-                      <MenuItem key={type.id} value={type.id?.toString()}>
+                      <MenuItem 
+                        key={type.id} 
+                        value={type.id?.toString()}
+                        disabled={type.id === 1 && !isAdmin} // Seuls les admins peuvent créer d'autres admins
+                      >
                         {type.typeName}
                       </MenuItem>
                     ))}
                   </Select>
                   {formErrors.userTypeId && <FormHelperText>{formErrors.userTypeId}</FormHelperText>}
                 </FormControl>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  {isEditMode ? 'Modifier le mot de passe (optionnel)' : 'Définir le mot de passe'}
+                </Typography>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Mot de passe"
+                  name="password"
+                  type="password"
+                  value={formData.password || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.password}
+                  helperText={isEditMode ? 
+                    formErrors.password || 'Laissez vide pour conserver le mot de passe actuel' : 
+                    formErrors.password
+                  }
+                  required={!isEditMode}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Confirmer le mot de passe"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword || ''}
+                  onChange={handleChange}
+                  error={!!formErrors.confirmPassword}
+                  helperText={formErrors.confirmPassword}
+                  required={!isEditMode || !!formData.password}
+                />
               </Grid>
             </Grid>
             
